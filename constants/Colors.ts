@@ -9,11 +9,6 @@ export const Colors = {
     icon: "#111",
     tabIconDefault: "#111",
     tabIconSelected: tintColorLight,
-    gradient: {
-      start: "#111",
-      middle: "#577099",
-      end: "#000",
-    },
     primary: "#c3ec4e",
     secondary: "#789f0b",
     accent: "#d48624",
@@ -30,11 +25,6 @@ export const Colors = {
     icon: "#9BA1A6",
     tabIconDefault: "#9BA1A6",
     tabIconSelected: tintColorDark,
-    gradient: {
-      start: "#000",
-      middle: "#577099",
-      end: "#111",
-    },
     primary: "#789f0b",
     secondary: "#c3ec4e",
     accent: "#d48624",
