@@ -1,37 +1,30 @@
-const tintColorLight = "#c3ec4e";
-const tintColorDark = "#abdb23";
-
 export const Colors = {
   light: {
-    text: "#577099",
-    background: "#fff",
-    tint: tintColorLight,
-    icon: "#111",
-    tabIconDefault: "#111",
-    tabIconSelected: tintColorLight,
-    primary: "#c3ec4e",
-    secondary: "#789f0b",
-    accent: "#d48624",
-    headerBackground: "#abdb23",
-    headerText: "#577099",
-    inputBorder: "#ccc",
-    tableHover: "#447",
-    tableBorder: "#57780d",
+    primary: "#2C3E50", // Deep blue-gray for primary elements
+    secondary: "#34495E", // Slightly lighter blue-gray
+    accent: "#E67E22", // Warm orange for highlights
+    background: "#ECF0F1", // Light gray-white
+    text: "#2C3E50", // Dark blue-gray for text
+    textLight: "#7F8C8D", // Soft gray for secondary text
+    headerBackground: "#3498DB", // Bright blue for headers
+    headerText: "#FFFFFF", // White for header text
+    inputBorder: "#BDC3C7", // Light gray for borders
+    inputBackground: "#FFFFFF", // White input backgrounds
+    buttonPrimary: "#2980B9", // Vibrant blue for primary actions
+    buttonSecondary: "#E74C3C", // Soft red for secondary actions
   },
   dark: {
-    text: "#abdb23",
-    background: "#111",
-    tint: tintColorDark,
-    icon: "#9BA1A6",
-    tabIconDefault: "#9BA1A6",
-    tabIconSelected: tintColorDark,
-    primary: "#789f0b",
-    secondary: "#c3ec4e",
-    accent: "#d48624",
-    headerBackground: "#abdb23",
-    headerText: "#577099",
-    inputBorder: "#333",
-    tableHover: "#447",
-    tableBorder: "#57780d",
+    primary: "#34495E", // Dark blue-gray
+    secondary: "#2C3E50", // Slightly darker blue-gray
+    accent: "#D35400", // Deeper orange
+    background: "#2C3E50", // Deep blue-gray background
+    text: "#ECF0F1", // Light gray-white for text
+    textLight: "#BDC3C7", // Soft light gray for secondary text
+    headerBackground: "#2980B9", // Deep blue for headers
+    headerText: "#FFFFFF", // White for header text
+    inputBorder: "#495A69", // Dark border
+    inputBackground: "#34495E", // Dark input backgrounds
+    buttonPrimary: "#3498DB", // Bright blue for primary actions
+    buttonSecondary: "#E74C3C", // Soft red for secondary actions
   },
 };
