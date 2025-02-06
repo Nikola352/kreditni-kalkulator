@@ -1,0 +1,20 @@
+{
+    "loan_calculator": "Кредитни калкулатор",
+    "calculator": {
+        "amount": "Износ кредита",
+        "term": "Рок отплате",
+        "interest": "Годишња каматна стопа",
+        "calculate": "Израчунај",
+        "months": "мјесеци",
+        "reset": "Ресетуј",
+        "details": "Детаљи кредита",
+        "monthly_payment": "Рата кредита",
+        "total_payment": "Укупна отплата",
+        "total_interest": "Укупна камата",
+        "placeholder": {
+            "amount": "Унесите износ",
+            "term": "Период у мјесецима",
+            "interest": "Проценат камате"
+        }
+    }
+}

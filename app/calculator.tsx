@@ -9,9 +9,11 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { calculateLoan } from "../util/loanCalculator";
-import { Colors } from "@/constants/Colors"; // Assuming you've updated the Colors file
+import { Colors } from "@/constants/Colors";
+import { useTranslation } from "react-i18next";
 
 const LoanCalculatorScreen = () => {
+  const { t } = useTranslation();
   const [amount, setAmount] = useState("");
   const [months, setMonths] = useState("");
   const [interestRate, setInterestRate] = useState("");
@@ -62,16 +64,16 @@ const LoanCalculatorScreen = () => {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Loan Calculator</Text>
+        <Text style={styles.title}>{t("loan_calculator")}</Text>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Loan Amount</Text>
+          <Text style={styles.inputLabel}>{t("calculator.amount")}</Text>
           <View style={styles.inputWrapper}>
             <TextInput
               value={amount}
               onChangeText={setAmount}
               keyboardType="number-pad"
-              placeholder="Enter amount"
+              placeholder={t("calculator.placeholder.amount")}
               placeholderTextColor={Colors.light.textLight}
               returnKeyType="go"
               style={[styles.input, styles.inputWithUnit]}
@@ -82,32 +84,32 @@ const LoanCalculatorScreen = () => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Loan Term</Text>
+          <Text style={styles.inputLabel}>{t("calculator.term")}</Text>
           <View style={styles.inputWrapper}>
             <TextInput
               ref={monthsRef}
               value={months}
               onChangeText={setMonths}
               keyboardType="number-pad"
-              placeholder="Number of months"
+              placeholder={t("calculator.placeholder.term")}
               placeholderTextColor={Colors.light.textLight}
               returnKeyType="go"
               style={[styles.input, styles.inputWithUnit]}
               onSubmitEditing={() => interestRateRef.current?.focus()}
             />
-            <Text style={styles.inputUnit}>Months</Text>
+            <Text style={styles.inputUnit}>{t("calculator.months")}</Text>
           </View>
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Annual Interest Rate</Text>
+          <Text style={styles.inputLabel}>{t("calculator.interest")}</Text>
           <View style={styles.inputWrapper}>
             <TextInput
               ref={interestRateRef}
               value={interestRate}
               onChangeText={setInterestRate}
               keyboardType="number-pad"
-              placeholder="Interest percentage"
+              placeholder={t("calculator.placeholder.interest")}
               placeholderTextColor={Colors.light.textLight}
               returnKeyType="done"
               style={[styles.input, styles.inputWithUnit]}
@@ -121,23 +123,32 @@ const LoanCalculatorScreen = () => {
             onPress={calculate}
             style={[styles.calculatorButton, styles.calculateButton]}
           >
-            <Text style={styles.buttonText}>Calculate</Text>
+            <Text style={styles.buttonText}>{t("calculator.calculate")}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={resetCalculator}
             style={[styles.calculatorButton, styles.resetButton]}
           >
-            <Text style={styles.buttonText}>Reset</Text>
+            <Text style={styles.buttonText}>{t("calculator.reset")}</Text>
           </TouchableOpacity>
         </View>
 
         {results && (
           <View style={styles.resultsContainer}>
-            <Text style={styles.resultsTitle}>Loan Details</Text>
-            <ResultRow label="Monthly Payment" value={results.monthlyPayment} />
-            <ResultRow label="Total Payment" value={results.totalPayment} />
-            <ResultRow label="Total Interest" value={results.totalInterest} />
+            <Text style={styles.resultsTitle}>{t("calculator.details")}</Text>
+            <ResultRow
+              label={t("calculator.monthly_payment")}
+              value={results.monthlyPayment}
+            />
+            <ResultRow
+              label={t("calculator.total_payment")}
+              value={results.totalPayment}
+            />
+            <ResultRow
+              label={t("calculator.total_interest")}
+              value={results.totalInterest}
+            />
           </View>
         )}
       </ScrollView>

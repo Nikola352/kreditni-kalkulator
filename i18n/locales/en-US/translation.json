@@ -1,0 +1,20 @@
+{
+    "loan_calculator": "Loan Calculator",
+    "calculator": {
+        "amount": "Loan Amount",
+        "term": "Loan Term",
+        "interest": "Annual Interest Rate",
+        "calculate": "Calculate",
+        "months": "months",
+        "reset": "Reset",
+        "details": "Loan Details",
+        "monthly_payment": "Monthly Payment",
+        "total_payment": "Total Payment",
+        "total_interest": "Total Interest",
+        "placeholder": {
+            "amount": "Enter amount",
+            "term": "Number of months",
+            "interest": "Interest percantage"
+        }
+    }
+}
