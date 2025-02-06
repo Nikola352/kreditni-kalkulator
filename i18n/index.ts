@@ -30,4 +30,4 @@ const initI18n = async () => {
   return true;
 };
 
-export default initI18n;
+export { i18n, initI18n };

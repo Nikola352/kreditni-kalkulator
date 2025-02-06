@@ -16,5 +16,13 @@
             "term": "Number of months",
             "interest": "Interest percantage"
         }
+    },
+    "navigation": {
+        "calculator": "Calculator",
+        "language": "Language"
+    },
+    "language":  {
+        "title": "Select Language",
+        "default": "System Default"
     }
 }
