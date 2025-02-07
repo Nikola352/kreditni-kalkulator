@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Colors } from "@/constants/Colors";
+import { AntDesign } from "@expo/vector-icons";
 
 const LoanTypesScreen = () => {
   const { t } = useTranslation();
@@ -39,13 +40,30 @@ const LoanTypesScreen = () => {
       "INSERT INTO loan_types (type, interestRate) VALUES ($type, $interestRate)"
     );
     try {
-      await statement.executeAsync({
+      const result = await statement.executeAsync({
         $type: type,
         $interestRate: rate,
       });
-      setLoanTypes((old) => [...old, { type, interestRate: rate }]);
+
+      setLoanTypes((old) => [
+        ...old,
+        { id: result.lastInsertRowId, type, interestRate: rate },
+      ]);
       setType("");
       setInterestRate("");
+    } finally {
+      await statement.finalizeAsync();
+    }
+  };
+
+  const deleteLoanType = async (id: number) => {
+    const statement = await db.prepareAsync(
+      "DELETE FROM loan_types WHERE id = $id"
+    );
+    try {
+      await statement.executeAsync({ $id: id });
+
+      setLoanTypes((old) => old.filter((loanType) => loanType.id !== id));
     } finally {
       await statement.finalizeAsync();
     }
@@ -61,17 +79,24 @@ const LoanTypesScreen = () => {
 
         {/* Loan Type List */}
         <View style={styles.loanList}>
-          {loanTypes.map((loanType, idx) => (
-            <View key={idx} style={styles.loanCard}>
-              <Text style={styles.loanType}>{loanType.type}</Text>
-              <Text style={styles.loanRate}>{loanType.interestRate}%</Text>
+          {loanTypes.map((loanType) => (
+            <View key={loanType.id} style={styles.loanCard}>
+              <View>
+                <Text style={styles.loanType}>{loanType.type}</Text>
+                <Text style={styles.loanRate}>{loanType.interestRate}%</Text>
+              </View>
+              <TouchableOpacity onPress={() => deleteLoanType(loanType.id)}>
+                <AntDesign name="delete" size={24} color="red" />
+              </TouchableOpacity>
             </View>
           ))}
         </View>
 
         {/* Input Fields */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{t("loan_types.label.type")}</Text>
+          <Text style={styles.inputLabel}>
+            {t("loan_types.placeholder.type")}
+          </Text>
           <View style={styles.inputWrapper}>
             <TextInput
               value={type}
@@ -88,7 +113,7 @@ const LoanTypesScreen = () => {
 
         <View style={styles.inputContainer}>
           <Text style={styles.inputLabel}>
-            {t("loan_types.label.interest")}
+            {t("loan_types.placeholder.interest")}
           </Text>
           <View style={styles.inputWrapper}>
             <TextInput
