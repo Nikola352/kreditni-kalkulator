@@ -11,10 +11,12 @@
         "monthly_payment": "Рата кредита",
         "total_payment": "Укупна отплата",
         "total_interest": "Укупна камата",
+        "loan_type": "Тип кредита",
         "placeholder": {
             "amount": "Унесите износ",
             "term": "Период у мјесецима",
-            "interest": "Проценат камате"
+            "interest": "Проценат камате",
+            "loan_type": "Одаберите тип кредита"
         }
     },
     "navigation": {

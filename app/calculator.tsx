@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -6,14 +6,20 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Keyboard,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { calculateLoan } from "../util/loanCalculator";
 import { Colors } from "@/constants/Colors";
 import { useTranslation } from "react-i18next";
+import { LoanType } from "@/model/loan-type";
+import { useSQLiteContext } from "expo-sqlite";
+import PickerSelect from "react-native-picker-select";
 
 const LoanCalculatorScreen = () => {
   const { t } = useTranslation();
+  const db = useSQLiteContext();
+
   const [amount, setAmount] = useState("");
   const [months, setMonths] = useState("");
   const [interestRate, setInterestRate] = useState("");
@@ -26,7 +32,30 @@ const LoanCalculatorScreen = () => {
   const monthsRef = useRef<TextInput>(null);
   const interestRateRef = useRef<TextInput>(null);
 
+  const [loanTypes, setLoanTypes] = useState<LoanType[]>([]);
+  const [selectedLoanType, setSelectedLoanType] = useState<LoanType | null>(
+    null
+  );
+
+  useEffect(() => {
+    async function setup() {
+      const result = await db.getAllAsync<LoanType>("SELECT * FROM loan_types");
+      setLoanTypes(result);
+    }
+    setup();
+  }, []);
+
+  useEffect(() => {
+    if (selectedLoanType) {
+      if (selectedLoanType) {
+        setInterestRate(selectedLoanType.interestRate.toString());
+      }
+    }
+  }, [selectedLoanType]);
+
   const calculate = () => {
+    Keyboard.dismiss();
+
     const principal = parseFloat(amount);
     const rate = parseFloat(interestRate) / 100 / 12;
     const periods = parseInt(months);
@@ -98,6 +127,23 @@ const LoanCalculatorScreen = () => {
               onSubmitEditing={() => interestRateRef.current?.focus()}
             />
             <Text style={styles.inputUnit}>{t("calculator.months")}</Text>
+          </View>
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>{t("calculator.loan_type")}</Text>
+          <View style={styles.selectWrapper}>
+            <PickerSelect
+              onValueChange={(val) => setSelectedLoanType(val)}
+              items={loanTypes.map((type) => ({
+                label: type.type,
+                value: type,
+              }))}
+              placeholder={{
+                label: t("calculator.placeholder.loan_type"),
+                value: null,
+              }}
+            />
           </View>
         </View>
 
@@ -211,6 +257,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.light.text,
     fontWeight: "bold",
+  },
+  selectWrapper: {
+    backgroundColor: Colors.light.inputBackground,
+    borderWidth: 1,
+    borderColor: Colors.light.inputBorder,
+    borderRadius: 10,
+    paddingHorizontal: 15,
   },
   buttonContainer: {
     flexDirection: "row",

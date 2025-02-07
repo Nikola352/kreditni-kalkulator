@@ -11,10 +11,12 @@
         "monthly_payment": "Monthly Payment",
         "total_payment": "Total Payment",
         "total_interest": "Total Interest",
+        "loan_type": "Loan type",
         "placeholder": {
             "amount": "Enter amount",
             "term": "Number of months",
-            "interest": "Interest percantage"
+            "interest": "Interest percantage",
+            "loan_type": "Select loan type"
         }
     },
     "navigation": {
