@@ -19,7 +19,20 @@
     },
     "navigation": {
         "calculator": "Calculator",
+        "loan_types": "Loan Types",
         "language": "Language"
+    },
+    "loan_types": {
+        "title": "Loan Types",
+        "label": {
+            "type": "Loan type",
+            "interest": "Annual Interest Rate"
+        },
+        "placeholder": {
+            "type": "Loan type name",
+            "interest": "Interest percantage"
+        },
+        "add": "Add"
     },
     "language":  {
         "title": "Select Language",

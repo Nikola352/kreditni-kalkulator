@@ -21,6 +21,9 @@ import LanguageScreen from "./language";
 import { StyleSheet, Text } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { SQLiteProvider } from "expo-sqlite";
+import { migrateDbIfNeeded } from "@/util/db-setup";
+import LoanTypesScreen from "./loan-types";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,6 +48,12 @@ const CustomDrawerContent = (props: any) => {
       <DrawerItem
         label={t("navigation.calculator")}
         onPress={() => props.navigation.navigate("Calculator")}
+        labelStyle={styles.drawerLabel}
+        style={styles.drawerItem}
+      />
+      <DrawerItem
+        label={t("navigation.loan_types")}
+        onPress={() => props.navigation.navigate("LoanTypes")}
         labelStyle={styles.drawerLabel}
         style={styles.drawerItem}
       />
@@ -78,21 +87,27 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Drawer.Navigator
-        drawerContent={(props) => <CustomDrawerContent {...props} />}
-        screenOptions={{
-          headerShown: false,
-          drawerStyle: {
-            backgroundColor: Colors.light.headerBackground,
-            width: 250,
-          },
-        }}
-      >
-        <Drawer.Screen name="Calculator" component={CalculatorScreen} />
-        <Drawer.Screen name="Language" component={LanguageScreen} />
-      </Drawer.Navigator>
-    </ThemeProvider>
+    <SQLiteProvider
+      databaseName="kreditni-kalkulator.db"
+      onInit={migrateDbIfNeeded}
+    >
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <Drawer.Navigator
+          drawerContent={(props) => <CustomDrawerContent {...props} />}
+          screenOptions={{
+            headerShown: false,
+            drawerStyle: {
+              backgroundColor: Colors.light.headerBackground,
+              width: 250,
+            },
+          }}
+        >
+          <Drawer.Screen name="Calculator" component={CalculatorScreen} />
+          <Drawer.Screen name="LoanTypes" component={LoanTypesScreen} />
+          <Drawer.Screen name="Language" component={LanguageScreen} />
+        </Drawer.Navigator>
+      </ThemeProvider>
+    </SQLiteProvider>
   );
 }
 

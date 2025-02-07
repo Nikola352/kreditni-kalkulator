@@ -19,7 +19,20 @@
     },
     "navigation": {
         "calculator": "Калкулатор",
+        "loan_types": "Типови кредита",
         "language": "Језик"
+    },
+    "loan_types": {
+        "title": "Типови кредита",
+        "label": {
+            "type": "Тип кредита",
+            "interest": "Номинална годишња каматна стопа"
+        },
+        "placeholder": {
+            "type": "Назив типа кредита",
+            "interest": "Проценат камате"
+        },
+        "add": "Додај"
     },
     "language":  {
         "title": "Изаберите језик",
