@@ -30,7 +30,7 @@ export default function LoanOptionsScreen() {
   useEffect(() => {
     async function fetchLoanOptions() {
       const result = await db.getAllAsync<LoanOption>(
-        "SELECT * FROM loan_options WHERE loanTypeId = ?",
+        "SELECT * FROM loan_options WHERE loanTypeId = ? ORDER BY startAmount",
         [loanTypeId]
       );
       setLoanOptions(result);
@@ -59,7 +59,7 @@ export default function LoanOptionsScreen() {
         $smallInterestRate: smallInterestRateVal,
         $largeInterestRate: largeInterestRateVal,
       });
-      setLoanOptions([
+      const opts = [
         ...loanOptions,
         {
           id: result.lastInsertRowId,
@@ -68,7 +68,9 @@ export default function LoanOptionsScreen() {
           smallInterestRate: smallInterestRateVal,
           largeInterestRate: largeInterestRateVal,
         },
-      ]);
+      ];
+      opts.sort((a, b) => a.startAmount - b.startAmount);
+      setLoanOptions(opts);
 
       setStartAmount("");
       setSmallInterestRate("");
