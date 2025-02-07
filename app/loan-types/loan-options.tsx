@@ -21,12 +21,11 @@ export default function LoanOptionsScreen() {
   const { loanTypeId } = route.params as { loanTypeId: number };
   const db = useSQLiteContext();
   const [loanOptions, setLoanOptions] = useState<LoanOption[]>([]);
-  const [newOption, setNewOption] = useState<LoanOption>({
-    startAmount: 0,
-    smallInterestRate: 0,
-    largeInterestRate: 0,
-    loanTypeId: loanTypeId,
-  });
+  const [editingOption, setEditingOption] = useState<LoanOption | null>(null);
+
+  const [startAmount, setStartAmount] = useState("");
+  const [smallInterestRate, setSmallInterestRate] = useState("");
+  const [largeInterestRate, setLargeInterestRate] = useState("");
 
   useEffect(() => {
     async function fetchLoanOptions() {
@@ -42,30 +41,40 @@ export default function LoanOptionsScreen() {
   const addLoanOption = async () => {
     Keyboard.dismiss();
 
-    await db.runAsync(
-      "INSERT INTO loan_options (loanTypeId, startAmount, smallInterestRate, largeInterestRate) VALUES (?, ?, ?, ?)",
-      [
-        loanTypeId,
-        newOption.startAmount,
-        newOption.smallInterestRate,
-        newOption.largeInterestRate,
-      ]
-    );
-    setLoanOptions([...loanOptions, { ...newOption, loanTypeId }]);
-    setNewOption({
-      startAmount: 0,
-      smallInterestRate: 0,
-      largeInterestRate: 0,
-      loanTypeId,
-    });
-  };
+    const startAmountVal = parseFloat(startAmount);
+    const smallInterestRateVal = parseFloat(smallInterestRate);
+    const largeInterestRateVal = parseFloat(largeInterestRate);
 
-  const handleNumericInput = (text: string, field: keyof LoanOption) => {
-    const numericValue = parseFloat(text);
-    if (!isNaN(numericValue)) {
-      setNewOption({ ...newOption, [field]: numericValue });
-    } else {
-      setNewOption({ ...newOption, [field]: 0 });
+    if (!startAmountVal || !smallInterestRateVal || !largeInterestRateVal) {
+      return;
+    }
+
+    const statement = await db.prepareAsync(
+      "INSERT INTO loan_options (loanTypeId, startAmount, smallInterestRate, largeInterestRate) VALUES ($loanTypeId, $startAmount, $smallInterestRate, $largeInterestRate)"
+    );
+    try {
+      const result = await statement.executeAsync({
+        $loanTypeId: loanTypeId,
+        $startAmount: startAmountVal,
+        $smallInterestRate: smallInterestRateVal,
+        $largeInterestRate: largeInterestRateVal,
+      });
+      setLoanOptions([
+        ...loanOptions,
+        {
+          id: result.lastInsertRowId,
+          loanTypeId,
+          startAmount: startAmountVal,
+          smallInterestRate: smallInterestRateVal,
+          largeInterestRate: largeInterestRateVal,
+        },
+      ]);
+
+      setStartAmount("");
+      setSmallInterestRate("");
+      setLargeInterestRate("");
+    } finally {
+      await statement.finalizeAsync();
     }
   };
 
@@ -79,6 +88,65 @@ export default function LoanOptionsScreen() {
     } finally {
       await statement.finalizeAsync();
     }
+  };
+
+  const updateLoanOption = async () => {
+    Keyboard.dismiss();
+
+    if (!editingOption) return;
+
+    const startAmountVal = parseFloat(startAmount);
+    const smallInterestRateVal = parseFloat(smallInterestRate);
+    const largeInterestRateVal = parseFloat(largeInterestRate);
+
+    if (
+      (startAmountVal != 0 && !startAmountVal) ||
+      !smallInterestRateVal ||
+      !largeInterestRateVal
+    ) {
+      return;
+    }
+
+    await db.runAsync(
+      "UPDATE loan_options SET startAmount = ?, smallInterestRate = ?, largeInterestRate = ? WHERE id = ?",
+      [
+        startAmountVal,
+        smallInterestRateVal,
+        largeInterestRateVal,
+        editingOption.id!,
+      ]
+    );
+
+    setEditingOption({
+      ...editingOption,
+      startAmount: startAmountVal,
+      smallInterestRate: smallInterestRateVal,
+      largeInterestRate: largeInterestRateVal,
+    });
+
+    setLoanOptions((old) =>
+      old.map((option) =>
+        option.id === editingOption.id
+          ? {
+              ...editingOption,
+              startAmount: startAmountVal,
+              smallInterestRate: smallInterestRateVal,
+              largeInterestRate: largeInterestRateVal,
+            }
+          : option
+      )
+    );
+    setEditingOption(null);
+    setStartAmount("");
+    setSmallInterestRate("");
+    setLargeInterestRate("");
+  };
+
+  const handleEdit = (option: LoanOption) => {
+    setEditingOption(option);
+    setStartAmount(option.startAmount.toString());
+    setSmallInterestRate(option.smallInterestRate.toString());
+    setLargeInterestRate(option.largeInterestRate.toString());
   };
 
   return (
@@ -104,12 +172,20 @@ export default function LoanOptionsScreen() {
                   Long Term: {option.largeInterestRate}%
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={() => deleteLoanOption(option.id!)}
-                style={styles.deleteButton}
-              >
-                <AntDesign name="delete" size={24} color="red" />
-              </TouchableOpacity>
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  onPress={() => handleEdit(option)}
+                  style={styles.editButton}
+                >
+                  <AntDesign name="edit" size={24} color="blue" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => deleteLoanOption(option.id!)}
+                  style={styles.deleteButton}
+                >
+                  <AntDesign name="delete" size={24} color="red" />
+                </TouchableOpacity>
+              </View>
             </View>
           ))}
         </View>
@@ -119,8 +195,8 @@ export default function LoanOptionsScreen() {
           <Text style={styles.inputLabel}>Start Amount</Text>
           <View style={styles.inputWrapper}>
             <TextInput
-              value={newOption.startAmount.toString()}
-              onChangeText={(text) => handleNumericInput(text, "startAmount")}
+              value={startAmount}
+              onChangeText={setStartAmount}
               keyboardType="numeric"
               placeholder="Start Amount"
               placeholderTextColor={Colors.light.textLight}
@@ -134,10 +210,8 @@ export default function LoanOptionsScreen() {
           <Text style={styles.inputLabel}>Short-Term Interest Rate</Text>
           <View style={styles.inputWrapper}>
             <TextInput
-              value={newOption.smallInterestRate.toString()}
-              onChangeText={(text) =>
-                handleNumericInput(text, "smallInterestRate")
-              }
+              value={smallInterestRate}
+              onChangeText={setSmallInterestRate}
               keyboardType="numeric"
               placeholder="Short-Term Interest Rate"
               placeholderTextColor={Colors.light.textLight}
@@ -152,10 +226,8 @@ export default function LoanOptionsScreen() {
           <Text style={styles.inputLabel}>Long-Term Interest Rate</Text>
           <View style={styles.inputWrapper}>
             <TextInput
-              value={newOption.largeInterestRate.toString()}
-              onChangeText={(text) =>
-                handleNumericInput(text, "largeInterestRate")
-              }
+              value={largeInterestRate}
+              onChangeText={setLargeInterestRate}
               keyboardType="numeric"
               placeholder="Long-Term Interest Rate"
               placeholderTextColor={Colors.light.textLight}
@@ -166,9 +238,15 @@ export default function LoanOptionsScreen() {
           </View>
         </View>
 
-        <TouchableOpacity onPress={addLoanOption} style={styles.button}>
-          <Text style={styles.buttonText}>Add Option</Text>
-        </TouchableOpacity>
+        {editingOption ? (
+          <TouchableOpacity onPress={updateLoanOption} style={styles.button}>
+            <Text style={styles.buttonText}>Update Option</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={addLoanOption} style={styles.button}>
+            <Text style={styles.buttonText}>Add Option</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </LinearGradient>
   );
@@ -218,6 +296,13 @@ const styles = StyleSheet.create({
     color: "#FFD700",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  editButton: {
+    marginRight: 10,
   },
   deleteButton: {},
   inputContainer: {
