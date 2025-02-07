@@ -23,7 +23,8 @@ import { useTranslation } from "react-i18next";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { SQLiteProvider } from "expo-sqlite";
 import { migrateDbIfNeeded } from "@/util/db-setup";
-import LoanTypesScreen from "./loan-types";
+import LoanTypesScreen from "./loan-types/loan-types";
+import LoanTypesStack from "./loan-types/_layout";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -103,7 +104,7 @@ export default function RootLayout() {
           }}
         >
           <Drawer.Screen name="Calculator" component={CalculatorScreen} />
-          <Drawer.Screen name="LoanTypes" component={LoanTypesScreen} />
+          <Drawer.Screen name="LoanTypes" component={LoanTypesStack} />
           <Drawer.Screen name="Language" component={LanguageScreen} />
         </Drawer.Navigator>
       </ThemeProvider>

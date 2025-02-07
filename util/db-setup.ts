@@ -17,7 +17,19 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
   if (currentDbVersion === 0) {
     await db.execAsync(`
 PRAGMA journal_mode = 'wal';
-CREATE TABLE loan_types (id INTEGER PRIMARY KEY NOT NULL, type TEXT NOT NULL, interestRate REAL);
+PRAGMA foreign_keys = ON;
+CREATE TABLE loan_types (
+  id INTEGER PRIMARY KEY NOT NULL,
+  name TEXT NOT NULL
+);
+CREATE TABLE loan_options (
+  id INTEGER PRIMARY KEY NOT NULL, 
+  loanTypeId INTEGER NOT NULL,
+  startAmount INTEGER NOT NULL,
+  smallInterestRate REAL NOT NULL,
+  largeInterestRate REAL NOT NULL,
+  FOREIGN KEY (loanTypeId) REFERENCES loan_types (id) ON DELETE CASCADE
+);
 `);
     currentDbVersion = 1;
   }

@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { LoanType } from "@/model/loan-type";
 import { useSQLiteContext } from "expo-sqlite";
 import PickerSelect from "react-native-picker-select";
+import { LoanOption } from "@/model/loan-option";
 
 const LoanCalculatorScreen = () => {
   const { t } = useTranslation();
@@ -46,12 +47,35 @@ const LoanCalculatorScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedLoanType) {
-      if (selectedLoanType) {
-        setInterestRate(selectedLoanType.interestRate.toString());
+    async function updateInterestRate() {
+      const principal = parseFloat(amount);
+      const periods = parseInt(months);
+
+      if (selectedLoanType && principal && periods) {
+        const statement = await db.prepareAsync(
+          "SELECT * FROM loan_options WHERE loanTypeId=$loanTypeId AND $amount >= startAmount order by startAmount desc"
+        );
+        try {
+          const result = await statement.executeAsync<LoanOption>({
+            $loanTypeId: selectedLoanType.id,
+            $amount: principal,
+          });
+
+          const loanOption = await result.getFirstAsync();
+          if (loanOption == null) return;
+
+          if (periods <= 12) {
+            setInterestRate(loanOption.smallInterestRate.toString());
+          } else {
+            setInterestRate(loanOption.largeInterestRate.toString());
+          }
+        } finally {
+          await statement.finalizeAsync();
+        }
       }
     }
-  }, [selectedLoanType]);
+    updateInterestRate();
+  }, [selectedLoanType, amount, months]);
 
   const calculate = () => {
     Keyboard.dismiss();
@@ -136,7 +160,7 @@ const LoanCalculatorScreen = () => {
             <PickerSelect
               onValueChange={(val) => setSelectedLoanType(val)}
               items={loanTypes.map((type) => ({
-                label: type.type,
+                label: type.name,
                 value: type,
               }))}
               placeholder={{

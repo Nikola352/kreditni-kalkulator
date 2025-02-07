@@ -14,10 +14,17 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Colors } from "@/constants/Colors";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
+import { useNavigation } from "expo-router";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { LoanTypesStackParamList } from "./_layout";
 
 const LoanTypesScreen = () => {
   const { t } = useTranslation();
   const db = useSQLiteContext();
+
+  const navigation =
+    useNavigation<NativeStackNavigationProp<LoanTypesStackParamList>>();
+
   const [loanTypes, setLoanTypes] = useState<LoanType[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -29,59 +36,38 @@ const LoanTypesScreen = () => {
     setup();
   }, []);
 
-  const [type, setType] = useState("");
+  const [name, setName] = useState("");
   const [interestRate, setInterestRate] = useState("");
 
   const interestRateRef = useRef<TextInput>(null);
 
-  const addOrUpdateLoanType = async () => {
+  const submitLoanType = async () => {
     Keyboard.dismiss();
 
     const rate = parseFloat(interestRate);
-    if (!type || isNaN(rate)) return;
+    if (!name || isNaN(rate)) return;
 
-    if (editingId === null) {
-      const statement = await db.prepareAsync(
-        "INSERT INTO loan_types (type, interestRate) VALUES ($type, $interestRate)"
-      );
-      try {
-        const result = await statement.executeAsync({
-          $type: type,
-          $interestRate: rate,
-        });
-        setLoanTypes((old) => [
-          ...old,
-          { id: result.lastInsertRowId, type, interestRate: rate },
-        ]);
-      } finally {
-        await statement.finalizeAsync();
-      }
-    } else {
-      const statement = await db.prepareAsync(
-        "UPDATE loan_types SET type = $type, interestRate = $interestRate WHERE id = $id"
-      );
-      try {
-        await statement.executeAsync({
-          $id: editingId,
-          $type: type,
-          $interestRate: rate,
-        });
+    let newLoanType: LoanType;
 
-        setLoanTypes((old) =>
-          old.map((loanType) =>
-            loanType.id === editingId
-              ? { id: editingId, type, interestRate: rate }
-              : loanType
-          )
-        );
-        setEditingId(null);
-      } finally {
-        await statement.finalizeAsync();
-      }
+    const statement = await db.prepareAsync(
+      "INSERT INTO loan_types (name) VALUES ($name)"
+    );
+    try {
+      const result = await statement.executeAsync({ $name: name });
+      newLoanType = { id: result.lastInsertRowId, name };
+      setLoanTypes((old) => [...old, newLoanType]);
+    } finally {
+      await statement.finalizeAsync();
     }
 
-    setType("");
+    await db.runAsync(
+      "INSERT INTO loan_options (loanTypeId, startAmount, smallInterestRate, largeInterestRate) VALUES (?, ?, ?, ?)",
+      [newLoanType.id, 0, rate, rate]
+    );
+
+    setName("");
     setInterestRate("");
+    startEditing(newLoanType);
   };
 
   const deleteLoanType = async (id: number) => {
@@ -97,15 +83,7 @@ const LoanTypesScreen = () => {
   };
 
   const startEditing = (loanType: LoanType) => {
-    setType(loanType.type);
-    setInterestRate(loanType.interestRate.toString());
-    setEditingId(loanType.id);
-  };
-
-  const cancelEditing = () => {
-    setEditingId(null);
-    setType("");
-    setInterestRate("");
+    navigation.navigate("LoanOptions", { loanTypeId: loanType.id });
   };
 
   return (
@@ -121,8 +99,7 @@ const LoanTypesScreen = () => {
           {loanTypes.map((loanType) => (
             <View key={loanType.id} style={styles.loanCard}>
               <View>
-                <Text style={styles.loanType}>{loanType.type}</Text>
-                <Text style={styles.loanRate}>{loanType.interestRate}%</Text>
+                <Text style={styles.loanType}>{loanType.name}</Text>
               </View>
               <View style={styles.actionButtons}>
                 <TouchableOpacity
@@ -149,8 +126,8 @@ const LoanTypesScreen = () => {
           </Text>
           <View style={styles.inputWrapper}>
             <TextInput
-              value={type}
-              onChangeText={setType}
+              value={name}
+              onChangeText={setName}
               keyboardType="default"
               placeholder={t("loan_types.placeholder.type")}
               placeholderTextColor={Colors.light.textLight}
@@ -180,21 +157,11 @@ const LoanTypesScreen = () => {
           </View>
         </View>
 
-        {/* Buttons */}
-        <TouchableOpacity onPress={addOrUpdateLoanType} style={styles.button}>
+        <TouchableOpacity onPress={submitLoanType} style={styles.button}>
           <Text style={styles.buttonText}>
             {editingId === null ? t("loan_types.add") : t("loan_types.update")}
           </Text>
         </TouchableOpacity>
-
-        {/* Cancel Button (Visible Only in Edit Mode) */}
-        {editingId !== null && (
-          <TouchableOpacity onPress={cancelEditing} style={styles.cancelButton}>
-            <Text style={styles.cancelButtonText}>
-              {t("loan_types.cancel")}
-            </Text>
-          </TouchableOpacity>
-        )}
       </ScrollView>
     </LinearGradient>
   );
