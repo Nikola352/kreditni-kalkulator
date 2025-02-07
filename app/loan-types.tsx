@@ -9,15 +9,17 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
+  Keyboard,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Colors } from "@/constants/Colors";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 
 const LoanTypesScreen = () => {
   const { t } = useTranslation();
   const db = useSQLiteContext();
   const [loanTypes, setLoanTypes] = useState<LoanType[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
     async function setup() {
@@ -32,28 +34,54 @@ const LoanTypesScreen = () => {
 
   const interestRateRef = useRef<TextInput>(null);
 
-  const addLoanType = async () => {
+  const addOrUpdateLoanType = async () => {
+    Keyboard.dismiss();
+
     const rate = parseFloat(interestRate);
     if (!type || isNaN(rate)) return;
 
-    const statement = await db.prepareAsync(
-      "INSERT INTO loan_types (type, interestRate) VALUES ($type, $interestRate)"
-    );
-    try {
-      const result = await statement.executeAsync({
-        $type: type,
-        $interestRate: rate,
-      });
+    if (editingId === null) {
+      const statement = await db.prepareAsync(
+        "INSERT INTO loan_types (type, interestRate) VALUES ($type, $interestRate)"
+      );
+      try {
+        const result = await statement.executeAsync({
+          $type: type,
+          $interestRate: rate,
+        });
+        setLoanTypes((old) => [
+          ...old,
+          { id: result.lastInsertRowId, type, interestRate: rate },
+        ]);
+      } finally {
+        await statement.finalizeAsync();
+      }
+    } else {
+      const statement = await db.prepareAsync(
+        "UPDATE loan_types SET type = $type, interestRate = $interestRate WHERE id = $id"
+      );
+      try {
+        await statement.executeAsync({
+          $id: editingId,
+          $type: type,
+          $interestRate: rate,
+        });
 
-      setLoanTypes((old) => [
-        ...old,
-        { id: result.lastInsertRowId, type, interestRate: rate },
-      ]);
-      setType("");
-      setInterestRate("");
-    } finally {
-      await statement.finalizeAsync();
+        setLoanTypes((old) =>
+          old.map((loanType) =>
+            loanType.id === editingId
+              ? { id: editingId, type, interestRate: rate }
+              : loanType
+          )
+        );
+        setEditingId(null);
+      } finally {
+        await statement.finalizeAsync();
+      }
     }
+
+    setType("");
+    setInterestRate("");
   };
 
   const deleteLoanType = async (id: number) => {
@@ -62,11 +90,22 @@ const LoanTypesScreen = () => {
     );
     try {
       await statement.executeAsync({ $id: id });
-
       setLoanTypes((old) => old.filter((loanType) => loanType.id !== id));
     } finally {
       await statement.finalizeAsync();
     }
+  };
+
+  const startEditing = (loanType: LoanType) => {
+    setType(loanType.type);
+    setInterestRate(loanType.interestRate.toString());
+    setEditingId(loanType.id);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setType("");
+    setInterestRate("");
   };
 
   return (
@@ -85,9 +124,20 @@ const LoanTypesScreen = () => {
                 <Text style={styles.loanType}>{loanType.type}</Text>
                 <Text style={styles.loanRate}>{loanType.interestRate}%</Text>
               </View>
-              <TouchableOpacity onPress={() => deleteLoanType(loanType.id)}>
-                <AntDesign name="delete" size={24} color="red" />
-              </TouchableOpacity>
+              <View style={styles.actionButtons}>
+                <TouchableOpacity
+                  onPress={() => startEditing(loanType)}
+                  style={styles.editButton}
+                >
+                  <MaterialIcons name="edit" size={24} color="blue" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => deleteLoanType(loanType.id)}
+                  style={styles.deleteButton}
+                >
+                  <AntDesign name="delete" size={24} color="red" />
+                </TouchableOpacity>
+              </View>
             </View>
           ))}
         </View>
@@ -131,9 +181,20 @@ const LoanTypesScreen = () => {
         </View>
 
         {/* Buttons */}
-        <TouchableOpacity onPress={addLoanType} style={styles.button}>
-          <Text style={styles.buttonText}>{t("loan_types.add")}</Text>
+        <TouchableOpacity onPress={addOrUpdateLoanType} style={styles.button}>
+          <Text style={styles.buttonText}>
+            {editingId === null ? t("loan_types.add") : t("loan_types.update")}
+          </Text>
         </TouchableOpacity>
+
+        {/* Cancel Button (Visible Only in Edit Mode) */}
+        {editingId !== null && (
+          <TouchableOpacity onPress={cancelEditing} style={styles.cancelButton}>
+            <Text style={styles.cancelButtonText}>
+              {t("loan_types.cancel")}
+            </Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </LinearGradient>
   );
@@ -184,6 +245,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 20,
   },
+  actionButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  editButton: {
+    marginRight: 15,
+  },
+  deleteButton: {},
   inputContainer: {
     marginBottom: 20,
   },
@@ -222,6 +291,19 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.light.headerText,
+    fontWeight: "bold",
+    fontSize: 16,
+    textTransform: "uppercase",
+  },
+  cancelButton: {
+    borderRadius: 10,
+    padding: 15,
+    alignItems: "center",
+    backgroundColor: "gray",
+    marginTop: 10,
+  },
+  cancelButtonText: {
+    color: "white",
     fontWeight: "bold",
     fontSize: 16,
     textTransform: "uppercase",

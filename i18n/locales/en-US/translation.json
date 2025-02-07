@@ -32,7 +32,9 @@
             "type": "Loan type name",
             "interest": "Interest percantage"
         },
-        "add": "Add"
+        "add": "Add",
+        "update": "Update",
+        "cancel": "Cancel"
     },
     "language":  {
         "title": "Select Language",
