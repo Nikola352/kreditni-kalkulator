@@ -15,8 +15,11 @@ import {
 import { Colors } from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { AntDesign } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function LoanOptionsScreen() {
+  const { t } = useTranslation();
+
   const route = useRoute();
   const { loanTypeId } = route.params as { loanTypeId: number };
   const db = useSQLiteContext();
@@ -157,7 +160,7 @@ export default function LoanOptionsScreen() {
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Loan Options</Text>
+        <Text style={styles.title}>{t("loan_options.title")}</Text>
 
         {/* Loan Option List */}
         <View style={styles.loanList}>
@@ -165,13 +168,14 @@ export default function LoanOptionsScreen() {
             <View key={idx} style={styles.loanCard}>
               <View>
                 <Text style={styles.loanType}>
-                  Amount ≥ {option.startAmount}
+                  {t("loan_options.card.amount")} {option.startAmount}
                 </Text>
                 <Text style={styles.loanRate}>
-                  Short Term: {option.smallInterestRate}%
+                  {t("loan_options.card.short_term")} {option.smallInterestRate}
+                  %
                 </Text>
                 <Text style={styles.loanRate}>
-                  Long Term: {option.largeInterestRate}%
+                  {t("loan_options.card.long_term")} {option.largeInterestRate}%
                 </Text>
               </View>
               <View style={styles.actions}>
@@ -194,13 +198,15 @@ export default function LoanOptionsScreen() {
 
         {/* Input Fields */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Start Amount</Text>
+          <Text style={styles.inputLabel}>
+            {t("loan_options.label.start_amount")}
+          </Text>
           <View style={styles.inputWrapper}>
             <TextInput
               value={startAmount}
               onChangeText={setStartAmount}
               keyboardType="numeric"
-              placeholder="Start Amount"
+              placeholder={t("loan_options.placeholder.start_amount")}
               placeholderTextColor={Colors.light.textLight}
               returnKeyType="next"
               style={styles.input}
@@ -209,13 +215,15 @@ export default function LoanOptionsScreen() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Short-Term Interest Rate</Text>
+          <Text style={styles.inputLabel}>
+            {t("loan_options.label.short-term")}
+          </Text>
           <View style={styles.inputWrapper}>
             <TextInput
               value={smallInterestRate}
               onChangeText={setSmallInterestRate}
               keyboardType="numeric"
-              placeholder="Short-Term Interest Rate"
+              placeholder={t("loan_options.placeholder.short-term")}
               placeholderTextColor={Colors.light.textLight}
               returnKeyType="next"
               style={styles.input}
@@ -225,13 +233,15 @@ export default function LoanOptionsScreen() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Long-Term Interest Rate</Text>
+          <Text style={styles.inputLabel}>
+            {t("loan_options.label.long-term")}
+          </Text>
           <View style={styles.inputWrapper}>
             <TextInput
               value={largeInterestRate}
               onChangeText={setLargeInterestRate}
               keyboardType="numeric"
-              placeholder="Long-Term Interest Rate"
+              placeholder={t("loan_options.placeholder.long-term")}
               placeholderTextColor={Colors.light.textLight}
               returnKeyType="done"
               style={styles.input}
@@ -242,11 +252,11 @@ export default function LoanOptionsScreen() {
 
         {editingOption ? (
           <TouchableOpacity onPress={updateLoanOption} style={styles.button}>
-            <Text style={styles.buttonText}>Update Option</Text>
+            <Text style={styles.buttonText}>{t("loan_options.update")}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity onPress={addLoanOption} style={styles.button}>
-            <Text style={styles.buttonText}>Add Option</Text>
+            <Text style={styles.buttonText}>{t("loan_options.add")}</Text>
           </TouchableOpacity>
         )}
       </ScrollView>

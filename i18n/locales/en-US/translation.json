@@ -38,6 +38,26 @@
         "update": "Update",
         "cancel": "Cancel"
     },
+    "loan_options": {
+        "title": "Loan Options",
+        "card": {
+            "amount": "Amount ≥ ",
+            "short_term": "Short Term: ",
+            "long_term": "Long Term: "
+        },
+        "label": {
+            "start_amount": "Start Amount",
+            "short-term": "Short-Term Interest Rate (<12 months)",
+            "long-term": "Long-Term Interest Rate (≥12 moths)"
+        },
+        "placeholder": {
+            "start_amount": "Start Amount",
+            "short-term": "Short-Term Interest Rate",
+            "long-term": "Long-Term Interest Rate"
+        },
+        "update": "Update",
+        "add": "Add"
+    },
     "language":  {
         "title": "Select Language",
         "default": "System Default"
